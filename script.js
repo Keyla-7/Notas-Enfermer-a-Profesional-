@@ -1,153 +1,183 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const materias = {
-    "Primer año": [
-      "Antropología",
-      "Procesos psicológicos y sociales",
+  // Materias organizadas por años
+  const materiasPorAnio = {
+    1: [
+      "Antropologia",
+      "Procesos psicologicos y sociales",
       "Entornos virtuales",
       "Comunicación en salud",
       "Bases del cuidado",
-      "Morfofisiología",
-      "Fisico-química",
-      "Enfermería comunitaria y salud pública",
-      "Práctica profesionalizante I",
-      "Matemáticas",
-      "Comprensión y producción lectora",
+      "Morfofisiologia",
+      "Fisico-quimica",
+      "Enfermeria comunitaria y salud publica",
+      "Practica profesionalizante I",
+      "Matematicas",
+      "Comprension y produccion lectora"
     ],
-    "Segundo año": [
-      "Educación para la salud",
-      "Nutrición y dietoterapia",
-      "Microbiología parasitología e inmunología",
-      "Epidemiología y bioestadística",
-      "Farmacología aplicada a la enfermería",
-      "Fisiopatología humana",
-      "Cuidados de enfermería en el adulto",
+    2: [
+      "Educacion para la salud",
+      "Nutricion y dietoterapia",
+      "Microbiologia parasitologia e inmunologia",
+      "Epidemiologia y bioestadistica",
+      "Farmacologia aplicada a la enfermeria",
+      "Fisiopatologia humana",
+      "Cuidados de enfermeria en el adulto",
       "Aspectos psicosociales y culturales del desarrollo",
-      "Cuidados de enfermería en el adulto mayor",
+      "Cuidados de enfermeria en el adulto mayor"
     ],
-    "Tercer año": [
-      "Inglés técnico",
-      "Investigación en salud",
-      "Cuidados de enfermería en salud mental",
-      "Cuidados de enfermería en emergencias y catástrofes",
-      "Ética y legislación aplicada a la enfermería",
-      "Gestión del cuidado en enfermería",
-      "Cuidados de enfermería materna y del recién nacido",
-      "Cuidados de enfermería en las infancias y adolescencias",
-      "Práctica profesionalizante III",
-      "Vacunación e inmunización",
-    ],
+    3: [
+      "Ingles tecnico",
+      "Investigacion en salud",
+      "Cuidados de enfermeria en salud mental",
+      "Cuidados de enfermeria en emergencias y catastrofes",
+      "Etica y legislacion aplicada a la enfermeria",
+      "Gestion del cuidado en enfermeria",
+      "Cuidados de enfermeria materna y del recien nacido",
+      "Cuidados de enfermeria en las infancias y adolescencias",
+      "Practica profesionalizante III",
+      "Vacunacion e inmunizacion"
+    ]
   };
 
-  const container = document.getElementById("notas-container");
+  // Guardar notas en localStorage con esta clave
+  const LS_KEY = "notasEnfermeriaProfesional";
 
-  // Carga de notas guardadas en localStorage
-  let notasGuardadas = JSON.parse(localStorage.getItem("notasGuardadas") || "{}");
+  // Recuperar o iniciar notas
+  let notasGuardadas = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
 
-  // Función para crear select de notas aprobadas (60-100) y opción desaprobado
-  function crearSelectNota(valorActual = null) {
+  const contenedor = document.getElementById("contenedor-notas");
+
+  // Función para crear el select de notas 60-100 y opción desaprobado
+  function crearSelectNota(valorActual, onChangeCallback) {
     const select = document.createElement("select");
+    select.className = "nota-select";
 
-    // Opción "desaprobado" especial para notas < 60
-    const desaprobadoOption = document.createElement("option");
-    desaprobadoOption.value = "desaprobado";
-    desaprobadoOption.textContent = "Desaprobado (poner nota manual)";
-    select.appendChild(desaprobadoOption);
+    // Opción desaprobado
+    const opcionDesaprobado = document.createElement("option");
+    opcionDesaprobado.value = "desaprobado";
+    opcionDesaprobado.textContent = "Desaprobado";
+    select.appendChild(opcionDesaprobado);
 
+    // Opciones de 60 a 100 de uno en uno
     for (let i = 60; i <= 100; i++) {
-      const option = document.createElement("option");
-      option.value = i;
-      option.textContent = i;
-      select.appendChild(option);
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      select.appendChild(opt);
     }
 
-    if (valorActual !== null) {
-      if (valorActual < 60) {
-        select.value = "desaprobado";
-      } else {
-        select.value = valorActual;
-      }
+    // Si valorActual es menor a 60 y numérico, setear select en desaprobado
+    if (typeof valorActual === "number" && valorActual < 60) {
+      select.value = "desaprobado";
+    } else if (typeof valorActual === "number") {
+      select.value = valorActual;
     } else {
-      select.value = 60;
+      select.value = "desaprobado";
     }
+
+    select.addEventListener("change", (e) => {
+      onChangeCallback(e.target.value);
+    });
 
     return select;
   }
 
-  // Crear input para notas manuales (desaprobados)
-  function crearInputManual(valor = "") {
+  // Función para crear input para nota manual si desaprobado
+  function crearInputNota(valorActual, onInputCallback) {
     const input = document.createElement("input");
     input.type = "number";
     input.min = 0;
     input.max = 59;
-    input.placeholder = "Nota < 60";
-    input.value = valor;
-    input.style.width = "80px";
+    input.step = 1;
+    input.className = "nota-input";
+    input.placeholder = "0 - 59";
+
+    if (typeof valorActual === "number" && valorActual < 60) {
+      input.value = valorActual;
+      input.style.display = "inline-block";
+    }
+
+    input.addEventListener("input", (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (!isNaN(val)) {
+        onInputCallback(val);
+      } else {
+        onInputCallback(null);
+      }
+    });
+
     return input;
   }
 
-  // Crear nota UI (práctico, parcial, recuperatorio, final)
-  function crearNotaItem(materia, tipo, valor = null) {
+  // Crear un item de nota: label + select + input (input solo visible si desaprobado) + boton eliminar para TP
+  // tipo: "tp", "parcial", "final", "recuperatorio"
+  // eliminarBtnVisible solo para TPs
+  function crearNotaItem(materia, tipo, numero, valorNota, onChange, eliminarBtnVisible = false, onEliminar) {
     const div = document.createElement("div");
-    div.classList.add("nota-item");
-    div.dataset.materia = materia;
+    div.className = "nota-item";
     div.dataset.tipo = tipo;
 
-    const label = document.createElement("label");
-    label.classList.add("nota-label");
-    label.textContent = `${tipo} (${materia}): `;
-    label.style.minWidth = "180px";
-    label.style.textAlign = "left";
+    // Etiqueta
+    const label = document.createElement("div");
+    label.className = "nota-label";
+    let textoLabel = tipo.toUpperCase();
+    if (tipo === "tp") textoLabel = `TP ${numero}`;
+    if (tipo === "parcial") textoLabel = `Parcial ${numero}`;
+    if (tipo === "final") textoLabel = "Final";
+    if (tipo === "recuperatorio") textoLabel = `Recuperatorio ${numero}`;
 
+    label.textContent = textoLabel;
     div.appendChild(label);
 
-    if (tipo === "Recuperatorio Parcial 1" || tipo === "Recuperatorio Parcial 2" || tipo === "Recuperatorio Final") {
-      div.classList.add("recuperatorio");
-      div.style.display = "none"; // oculto por defecto
-    }
-
-    let select = crearSelectNota(valor);
+    // Select nota
+    const select = crearSelectNota(valorNota, (nuevoValor) => {
+      if (nuevoValor === "desaprobado") {
+        input.style.display = "inline-block";
+        // Actualizar estado visual a desaprobado
+        div.classList.remove("aprobado");
+        div.classList.add("desaprobado");
+        actualizarNota(materia, tipo, numero, null, true);
+      } else {
+        input.style.display = "none";
+        div.classList.remove("desaprobado");
+        div.classList.add("aprobado");
+        actualizarNota(materia, tipo, numero, Number(nuevoValor), false);
+      }
+      actualizarPromedio(materia);
+      actualizarVisualNotas(div);
+      manejarRecuperatorios(materia);
+    });
     div.appendChild(select);
 
-    let inputManual = null;
-
-    // Si el valor es desaprobado, mostrar input manual
-    if (valor !== null && valor < 60) {
-      select.value = "desaprobado";
-      inputManual = crearInputManual(valor);
-      div.appendChild(inputManual);
-    }
-
-    // Cambiar entre select e input manual según opción elegida
-    select.addEventListener("change", () => {
-      if (select.value === "desaprobado") {
-        inputManual = crearInputManual();
-        div.appendChild(inputManual);
-      } else {
-        if (inputManual) {
-          div.removeChild(inputManual);
-          inputManual = null;
-        }
+    // Input nota manual (solo para desaprobado)
+    const input = crearInputNota(valorNota, (nuevoValor) => {
+      if (nuevoValor !== null && nuevoValor >= 0 && nuevoValor <= 59) {
+        actualizarNota(materia, tipo, numero, nuevoValor, true);
+        actualizarPromedio(materia);
+        actualizarVisualNotas(div);
+        manejarRecuperatorios(materia);
       }
-      actualizarNota(materia);
     });
+    div.appendChild(input);
 
-    if (inputManual) {
-      inputManual.addEventListener("input", () => {
-        actualizarNota(materia);
-      });
+    // Mostrar u ocultar input segun valorNota
+    if (typeof valorNota === "number" && valorNota < 60) {
+      input.style.display = "inline-block";
+      div.classList.add("desaprobado");
+    } else if (typeof valorNota === "number" && valorNota >= 60) {
+      div.classList.add("aprobado");
     }
 
-    // Para eliminar nota si es práctico
-    if (tipo.startsWith("Tp")) {
+    // Boton eliminar para trabajos practicos
+    if (eliminarBtnVisible) {
       const btnEliminar = document.createElement("button");
-      btnEliminar.textContent = "🗑️";
-      btnEliminar.title = "Eliminar trabajo práctico";
-      btnEliminar.style.marginLeft = "10px";
-      btnEliminar.style.cursor = "pointer";
+      btnEliminar.className = "eliminar-tp-btn boton-emoj";
+      btnEliminar.title = "Eliminar trabajo práctico ❌";
+      btnEliminar.textContent = "❌";
       btnEliminar.addEventListener("click", () => {
-        div.remove();
-        guardarNotas();
-        actualizarPromedios();
+        if (confirm(`¿Eliminar ${textoLabel} de ${materia}?`)) {
+          eliminarTrabajoPractico(materia, numero);
+        }
       });
       div.appendChild(btnEliminar);
     }
@@ -155,261 +185,286 @@ document.addEventListener("DOMContentLoaded", () => {
     return div;
   }
 
-  // Crear sección materia con trabajos prácticos, parciales, final y recuperatorios
-  function crearSeccionMateria(nombreMateria) {
-    const div = document.createElement("div");
-    div.classList.add("materia");
+  // Actualizar nota en el objeto y guardar
+  function actualizarNota(materia, tipo, numero, valor, desaprobado = false) {
+    if (!notasGuardadas[materia]) notasGuardadas[materia] = {};
 
-    const h3 = document.createElement("h3");
-    h3.textContent = nombreMateria;
-    div.appendChild(h3);
+    if (!notasGuardadas[materia][tipo]) notasGuardadas[materia][tipo] = {};
 
-    // Contenedor para notas de la materia
-    const notasList = document.createElement("div");
-    notasList.classList.add("notas-list");
-    div.appendChild(notasList);
+    if (valor === null) {
+      delete notasGuardadas[materia][tipo][numero];
+    } else {
+      notasGuardadas[materia][tipo][numero] = { valor, desaprobado };
+    }
 
-    // Botón para agregar trabajo práctico
-    const btnAgregarTp = document.createElement("button");
-    btnAgregarTp.textContent = "➕ agregar TP";
-    btnAgregarTp.style.margin = "10px";
-    btnAgregarTp.style.cursor = "pointer";
+    // Si está vacío el objeto tipo lo eliminamos
+    if (Object.keys(notasGuardadas[materia][tipo]).length === 0) {
+      delete notasGuardadas[materia][tipo];
+    }
 
-    let contadorTp = 0;
-    // Contar TPs guardados para esta materia si existen
-    Object.keys(notasGuardadas).forEach(key => {
-      if (key.startsWith(nombreMateria + "_Tp")) {
-        contadorTp++;
-      }
-    });
+    // Si materia vacía la borramos
+    if (Object.keys(notasGuardadas[materia]).length === 0) {
+      delete notasGuardadas[materia];
+    }
 
-    btnAgregarTp.addEventListener("click", () => {
-      contadorTp++;
-      const tipoTp = `Tp${contadorTp}`;
-      const notaTp = crearNotaItem(nombreMateria, tipoTp);
-      notasList.appendChild(notaTp);
-      guardarNotas();
-    });
-    div.appendChild(btnAgregarTp);
-
-    // Crear 2 parciales y un final
-    const parcial1 = crearNotaItem(nombreMateria, "Parcial 1");
-    const parcial2 = crearNotaItem(nombreMateria, "Parcial 2");
-    const final = crearNotaItem(nombreMateria, "Final");
-
-    notasList.appendChild(parcial1);
-    notasList.appendChild(parcial2);
-    notasList.appendChild(final);
-
-    // Recuperatorios están ocultos por defecto, se mostrarán si es necesario
-    const recupP1 = crearNotaItem(nombreMateria, "Recuperatorio Parcial 1");
-    const recupP2 = crearNotaItem(nombreMateria, "Recuperatorio Parcial 2");
-    const recupFinal = crearNotaItem(nombreMateria, "Recuperatorio Final");
-
-    notasList.appendChild(recupP1);
-    notasList.appendChild(recupP2);
-    notasList.appendChild(recupFinal);
-
-    return div;
+    localStorage.setItem(LS_KEY, JSON.stringify(notasGuardadas));
   }
 
-  // Actualiza las notas en el objeto y en el DOM, maneja mostrar/ocultar recuperatorios y colores
-  function actualizarNota(materia) {
-    const materiaDiv = [...container.children].find(div => div.querySelector("h3")?.textContent === materia);
-    if (!materiaDiv) return;
+  // Eliminar trabajo practico entero
+  function eliminarTrabajoPractico(materia, numero) {
+    if (notasGuardadas[materia] && notasGuardadas[materia].tp && notasGuardadas[materia].tp[numero]) {
+      delete notasGuardadas[materia].tp[numero];
 
-    const notasList = materiaDiv.querySelector(".notas-list");
-    let guardar = false;
-
-    // Recorre cada nota para actualizar estados y valores
-    [...notasList.children].forEach(divNota => {
-      const select = divNota.querySelector("select");
-      const inputManual = divNota.querySelector("input[type=number]");
-      let valor = null;
-
-      if (select) {
-        if (select.value === "desaprobado" && inputManual) {
-          valor = parseInt(inputManual.value) || 0;
-        } else {
-          valor = parseInt(select.value);
-        }
+      // Si tp queda vacío
+      if (Object.keys(notasGuardadas[materia].tp).length === 0) {
+        delete notasGuardadas[materia].tp;
+      }
+      // Si materia vacía la borramos
+      if (Object.keys(notasGuardadas[materia]).length === 0) {
+        delete notasGuardadas[materia];
       }
 
-      // Actualizar clases para color según aprobado o no
-      if (valor !== null) {
-        divNota.classList.toggle("aprobado", valor >= 60);
-        divNota.classList.toggle("desaprobado", valor < 60);
-      }
-
-      // Guardar nota en el objeto global
-      const key = materia + "_" + divNota.dataset.tipo;
-      if (valor !== null) {
-        notasGuardadas[key] = valor;
-        guardar = true;
-      }
-
-      // Lógica para mostrar/ocultar recuperatorios según nota
-      if (divNota.dataset.tipo === "Parcial 1") {
-        const recup = notasList.querySelector("[data-tipo='Recuperatorio Parcial 1']");
-        if (valor < 60) {
-          recup.style.display = "flex";
-          recup.classList.add("visible");
-        } else {
-          recup.style.display = "none";
-          recup.classList.remove("visible");
-          // Borra la nota de recuperatorio si la hay
-          delete notasGuardadas[materia + "_Recuperatorio Parcial 1"];
-        }
-      }
-      if (divNota.dataset.tipo === "Parcial 2") {
-        const recup = notasList.querySelector("[data-tipo='Recuperatorio Parcial 2']");
-        if (valor < 60) {
-          recup.style.display = "flex";
-          recup.classList.add("visible");
-        } else {
-          recup.style.display = "none";
-          recup.classList.remove("visible");
-          delete notasGuardadas[materia + "_Recuperatorio Parcial 2"];
-        }
-      }
-      if (divNota.dataset.tipo === "Final") {
-        const recup = notasList.querySelector("[data-tipo='Recuperatorio Final']");
-        if (valor < 60) {
-          recup.style.display = "flex";
-          recup.classList.add("visible");
-        } else {
-          recup.style.display = "none";
-          recup.classList.remove("visible");
-          delete notasGuardadas[materia + "_Recuperatorio Final"];
-        }
-      }
-    });
-
-    if (guardar) guardarNotas();
-    actualizarPromedios();
+      localStorage.setItem(LS_KEY, JSON.stringify(notasGuardadas));
+      renderizarPagina();
+    }
   }
 
-  // Guarda el objeto de notas en localStorage
-  function guardarNotas() {
-    localStorage.setItem("notasGuardadas", JSON.stringify(notasGuardadas));
+  // Actualizar estilos visuales según nota
+  function actualizarVisualNotas(divNotaItem) {
+    const select = divNotaItem.querySelector("select");
+    const input = divNotaItem.querySelector("input");
+
+    let valor = null;
+    if (select.value === "desaprobado") {
+      valor = parseInt(input.value) || null;
+    } else {
+      valor = parseInt(select.value) || null;
+    }
+
+    divNotaItem.classList.remove("aprobado", "desaprobado");
+
+    if (valor !== null) {
+      if (valor >= 60) {
+        divNotaItem.classList.add("aprobado");
+      } else {
+        divNotaItem.classList.add("desaprobado");
+      }
+    }
   }
 
-  // Calcula y muestra el promedio de trabajos prácticos y parciales (final no)
-  function actualizarPromedios() {
-    [...container.children].forEach(materiaDiv => {
-      const notasList = materiaDiv.querySelector(".notas-list");
-      const materia = materiaDiv.querySelector("h3").textContent;
+  // Mostrar u ocultar recuperatorios según notas desaprobadas
+  function manejarRecuperatorios(materia) {
+    const materiaNotas = notasGuardadas[materia] || {};
 
-      let suma = 0;
-      let cantidad = 0;
+    // Para parciales 1 y 2
+    for (let parcialNum = 1; parcialNum <= 2; parcialNum++) {
+      const parcial = materiaNotas.parcial && materiaNotas.parcial[parcialNum];
+      const recuperatorioSelector = document.querySelector(
+        `[data-materia="${materia}"] .nota-item.recuperatorio[data-rel="parcial${parcialNum}"]`
+      );
 
-      [...notasList.children].forEach(divNota => {
-        const tipo = divNota.dataset.tipo;
-        const key = materia + "_" + tipo;
-        const valor = notasGuardadas[key];
-
-        if (valor !== undefined) {
-          // Solo trabajos prácticos y parciales cuentan para promedio
-          if (tipo.startsWith("Tp") || tipo.startsWith("Parcial")) {
-            suma += valor;
-            cantidad++;
+      if (parcial && parcial.valor !== null && parcial.valor < 60) {
+        // Mostrar recuperatorio
+        if (recuperatorioSelector) recuperatorioSelector.classList.add("visible");
+      } else {
+        // Ocultar recuperatorio y limpiar nota si existía
+        if (recuperatorioSelector) {
+          recuperatorioSelector.classList.remove("visible");
+          // Limpiar nota recuperatorio
+          actualizarNota(materia, "recuperatorio", `parcial${parcialNum}`, null);
+          // Actualizar select/input para que desaparezca la nota visualmente
+          const select = recuperatorioSelector.querySelector("select");
+          const input = recuperatorioSelector.querySelector("input");
+          if (select) select.value = "desaprobado";
+          if (input) {
+            input.value = "";
+            input.style.display = "none";
           }
         }
-      });
-
-      const promedio = cantidad === 0 ? 0 : (suma / cantidad).toFixed(2);
-
-      // Mostrar promedio en un elemento o crear uno si no existe
-      let promedioDiv = materiaDiv.querySelector(".promedio");
-      if (!promedioDiv) {
-        promedioDiv = document.createElement("div");
-        promedioDiv.classList.add("promedio");
-        promedioDiv.style.marginTop = "10px";
-        promedioDiv.style.fontWeight = "bold";
-        materiaDiv.appendChild(promedioDiv);
       }
-      promedioDiv.textContent = `Promedio TP y Parciales: ${promedio}`;
-    });
+    }
+
+    // Para final
+    const final = materiaNotas.final && Object.values(materiaNotas.final)[0];
+    const recuperatorioFinalDiv = document.querySelector(
+      `[data-materia="${materia}"] .nota-item.recuperatorio[data-rel="final"]`
+    );
+
+    if (final && final.valor !== null && final.valor < 60) {
+      if (recuperatorioFinalDiv) recuperatorioFinalDiv.classList.add("visible");
+    } else {
+      if (recuperatorioFinalDiv) {
+        recuperatorioFinalDiv.classList.remove("visible");
+        // Limpiar nota recuperatorio final
+        actualizarNota(materia, "recuperatorio", "final", null);
+        const select = recuperatorioFinalDiv.querySelector("select");
+        const input = recuperatorioFinalDiv.querySelector("input");
+        if (select) select.value = "desaprobado";
+        if (input) {
+          input.value = "";
+          input.style.display = "none";
+        }
+      }
+    }
   }
 
-  // Carga las notas guardadas y arma la UI
-  function cargarNotas() {
-    Object.entries(notasGuardadas).forEach(([key, valor]) => {
-      const [materia, tipo] = key.split("_");
-      if (!materia || !tipo) return;
-      // No hago nada acá porque las notas se cargan al crear cada nota y actualizar estado
-    });
+  // Calcular y mostrar promedio solo de TP y parciales (no finales)
+  function actualizarPromedio(materia) {
+    const materiaNotas = notasGuardadas[materia];
+    if (!materiaNotas) {
+      actualizarPromedioVisual(materia, null);
+      return;
+    }
+
+    let suma = 0;
+    let count = 0;
+
+    // TP
+    if (materiaNotas.tp) {
+      for (const key in materiaNotas.tp) {
+        const nota = materiaNotas.tp[key];
+        if (nota.valor !== null && nota.valor >= 0) {
+          suma += nota.valor;
+          count++;
+        }
+      }
+    }
+
+    // Parciales
+    if (materiaNotas.parcial) {
+      for (const key in materiaNotas.parcial) {
+        const nota = materiaNotas.parcial[key];
+        if (nota.valor !== null && nota.valor >= 0) {
+          suma += nota.valor;
+          count++;
+        }
+      }
+    }
+
+    if (count === 0) {
+      actualizarPromedioVisual(materia, null);
+      return;
+    }
+
+    const promedio = (suma / count).toFixed(2);
+    actualizarPromedioVisual(materia, promedio);
   }
 
-  // Crear toda la página con materias y notas
-  function crearPagina() {
-    Object.entries(materias).forEach(([anio, listaMaterias]) => {
-      const seccion = document.createElement("section");
-      seccion.classList.add("anio");
+  function actualizarPromedioVisual(materia, promedio) {
+    const contenedorMateria = document.querySelector(`[data-materia="${materia}"]`);
+    if (!contenedorMateria) return;
+
+    let elemPromedio = contenedorMateria.querySelector(".promedio");
+    if (!elemPromedio) {
+      elemPromedio = document.createElement("div");
+      elemPromedio.className = "promedio";
+      contenedorMateria.appendChild(elemPromedio);
+    }
+
+    if (promedio === null) {
+      elemPromedio.textContent = "Promedio: -";
+    } else {
+      elemPromedio.textContent = `Promedio TP + Parciales: ${promedio}%`;
+    }
+  }
+
+  // Crear materia con todos sus controles
+  function crearMateria(materia, anio) {
+    const divMateria = document.createElement("div");
+    divMateria.className = "materia";
+    divMateria.dataset.materia = materia;
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = materia;
+    divMateria.appendChild(titulo);
+
+    const listaNotas = document.createElement("div");
+    listaNotas.className = "notas-list";
+
+    // Trabajos prácticos (tp)
+    const tps = notasGuardadas[materia] && notasGuardadas[materia].tp ? notasGuardadas[materia].tp : {};
+    const numTPs = Object.keys(tps).length || 0;
+
+    // Mostrar TP existentes
+    for (let i = 1; i <= numTPs; i++) {
+      const valorNota = tps[i] ? tps[i].valor : null;
+      const desaprobado = tps[i] ? tps[i].desaprobado : false;
+      const notaItem = crearNotaItem(materia, "tp", i, valorNota, null, true);
+      listaNotas.appendChild(notaItem);
+    }
+
+    // Botón para agregar TP
+    const btnAgregarTP = document.createElement("button");
+    btnAgregarTP.className = "agregar-tp-btn";
+    btnAgregarTP.textContent = "➕ Agregar TP";
+    btnAgregarTP.title = `Agregar trabajo práctico a ${materia}`;
+    btnAgregarTP.addEventListener("click", () => {
+      const nuevoNumTP = Object.keys(tps).length + 1;
+      // Crear nuevo TP con nota null
+      actualizarNota(materia, "tp", nuevoNumTP, null);
+      renderizarPagina(); // Recargar toda la página para refrescar vista
+    });
+    divMateria.appendChild(listaNotas);
+    divMateria.appendChild(btnAgregarTP);
+
+    // Parciales (2)
+    for (let p = 1; p <= 2; p++) {
+      const valorNota = notasGuardadas[materia]?.parcial?.[p]?.valor ?? null;
+      const notaItemParcial = crearNotaItem(materia, "parcial", p, valorNota, null);
+      listaNotas.appendChild(notaItemParcial);
+
+      // Recuperatorio parcial
+      const valorRecup = notasGuardadas[materia]?.recuperatorio?.[`parcial${p}`]?.valor ?? null;
+      const recupDiv = crearNotaItem(materia, "recuperatorio", `parcial${p}`, valorRecup, null);
+      recupDiv.classList.add("recuperatorio");
+      recupDiv.dataset.rel = `parcial${p}`;
+      listaNotas.appendChild(recupDiv);
+    }
+
+    // Final
+    const valorFinal = notasGuardadas[materia]?.final?.[1]?.valor ?? null;
+    const notaFinal = crearNotaItem(materia, "final", 1, valorFinal, null);
+    listaNotas.appendChild(notaFinal);
+
+    // Recuperatorio final
+    const valorRecupFinal = notasGuardadas[materia]?.recuperatorio?.final?.valor ?? null;
+    const recupFinalDiv = crearNotaItem(materia, "recuperatorio", "final", valorRecupFinal, null);
+    recupFinalDiv.classList.add("recuperatorio");
+    recupFinalDiv.dataset.rel = "final";
+    listaNotas.appendChild(recupFinalDiv);
+
+    actualizarPromedio(materia);
+    manejarRecuperatorios(materia);
+
+    return divMateria;
+  }
+
+  // Renderizar toda la página
+  function renderizarPagina() {
+    contenedor.innerHTML = "";
+    for (const anio in materiasPorAnio) {
+      const divAnio = document.createElement("section");
+      divAnio.className = "anio";
+      divAnio.dataset.anio = anio;
+
       const h2 = document.createElement("h2");
-      h2.textContent = anio;
-      seccion.appendChild(h2);
+      h2.textContent = `Año ${anio}`;
+      divAnio.appendChild(h2);
 
-      listaMaterias.forEach(materia => {
-        const materiaDiv = crearSeccionMateria(materia);
-        seccion.appendChild(materiaDiv);
+      const divMaterias = document.createElement("div");
+      divMaterias.className = "materias-container";
+
+      materiasPorAnio[anio].forEach((mat) => {
+        const materiaDiv = crearMateria(mat, anio);
+        divMaterias.appendChild(materiaDiv);
       });
 
-      container.appendChild(seccion);
-    });
+      divAnio.appendChild(divMaterias);
+      contenedor.appendChild(divAnio);
+    }
   }
 
-  crearPagina();
-
-  // Después de crear toda la UI, asignamos valores guardados y eventos para actualizar notas
-  [...container.querySelectorAll(".nota-item")].forEach(divNota => {
-    const materia = divNota.dataset.materia;
-    const tipo = divNota.dataset.tipo;
-    const key = materia + "_" + tipo;
-    const valorGuardado = notasGuardadas[key];
-
-    const select = divNota.querySelector("select");
-    const inputManual = divNota.querySelector("input[type=number]");
-
-    if (valorGuardado !== undefined) {
-      if (valorGuardado < 60) {
-        select.value = "desaprobado";
-        if (inputManual) {
-          inputManual.value = valorGuardado;
-        } else {
-          // Crear input manual si no existe
-          const nuevoInput = crearInputManual(valorGuardado);
-          divNota.appendChild(nuevoInput);
-        }
-      } else {
-        select.value = valorGuardado;
-        if (inputManual) {
-          inputManual.remove();
-        }
-      }
-    }
-
-    // Evento para actualizar nota cuando cambia select o input manual
-    select.addEventListener("change", () => {
-      if (select.value === "desaprobado") {
-        let input = divNota.querySelector("input[type=number]");
-        if (!input) {
-          input = crearInputManual();
-          divNota.appendChild(input);
-          input.addEventListener("input", () => actualizarNota(materia));
-        }
-      } else {
-        let input = divNota.querySelector("input[type=number]");
-        if (input) input.remove();
-      }
-      actualizarNota(materia);
-    });
-
-    if (inputManual) {
-      inputManual.addEventListener("input", () => actualizarNota(materia));
-    }
-  });
-
-  actualizarPromedios();
+  // Inicializar
+  renderizarPagina();
 });
-                          
+        
