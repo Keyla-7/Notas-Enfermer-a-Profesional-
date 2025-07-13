@@ -166,3 +166,95 @@ h2 {
   overflow-y: auto;
   padding-right: 10px;
 }
+/* Estilos para las notas y controles en la página de notas */
+.nota-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin: 6px 0;
+  padding: 6px 8px;
+  border: 1.5px solid #d10077;
+  border-radius: 10px;
+  background-color: #ffcce3;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.nota-item.aprobado {
+  background-color: #c8e6c9 !important;
+  border-color: #4caf50 !important;
+  color: #2e7d32 !important;
+}
+
+.nota-item.desaprobado {
+  background-color: #f8d7da !important;
+  border-color: #a8323a !important;
+  color: #a8323a !important;
+}
+
+.nota-label {
+  min-width: 180px;
+  font-weight: bold;
+  color: #4a004d;
+  text-align: left;
+}
+
+.nota-item select,
+.nota-item input[type="number"] {
+  font-size: 1em;
+  border-radius: 8px;
+  border: 1.5px solid #d10077;
+  padding: 4px 8px;
+  width: 90px;
+  color: #4a004d;
+  background-color: white;
+}
+
+.nota-item input[type="number"] {
+  /* Se muestra sólo si se selecciona desaprobado */
+  display: inline-block;
+}
+
+.nota-item button {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 1.3em;
+  color: #a8323a;
+  transition: transform 0.15s ease;
+  user-select: none;
+}
+
+.nota-item button:hover {
+  transform: scale(1.3);
+}
+
+/* Para los botones de agregar TP */
+.agregar-tp-btn {
+  margin-top: 10px;
+  background-color: #d10077;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 1.2em;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.agregar-tp-btn:hover {
+  background-color: #a0005a;
+}
+
+/* Ocultar recuperatorios por defecto */
+.nota-item.recuperatorio {
+  display: none;
+  justify-content: flex-start;
+}
+
+/* Cuando recuperatorio está visible */
+.nota-item.recuperatorio.visible {
+  display: flex;
+}
