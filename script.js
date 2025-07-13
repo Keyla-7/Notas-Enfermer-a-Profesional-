@@ -1,4 +1,3 @@
-// Lista de materias precargadas para cada año
 const materiasPorAnio = {
   1: [
     "Antropología",
@@ -41,12 +40,10 @@ const materiasPorAnio = {
 document.addEventListener("DOMContentLoaded", () => {
   const aniosSections = document.querySelectorAll(".anio");
 
-  // Cargar materias guardadas o iniciales
   aniosSections.forEach((seccion) => {
     const anio = seccion.dataset.anio;
     const container = seccion.querySelector(".materias-container");
 
-    // Cargar materias guardadas en localStorage
     const materiasGuardadas = JSON.parse(localStorage.getItem("notasMaterias_" + anio)) || [];
 
     if (materiasGuardadas.length > 0) {
@@ -54,14 +51,12 @@ document.addEventListener("DOMContentLoaded", () => {
         agregarMateriaUI(container, materia.nombre, materia.notas);
       });
     } else {
-      // Cargar materias iniciales
       materiasPorAnio[anio].forEach((nombreMateria) => {
         agregarMateriaUI(container, nombreMateria, []);
       });
     }
   });
 
-  // Función para crear el UI de una materia
   function agregarMateriaUI(container, nombre, notas = []) {
     const materiaDiv = document.createElement("div");
     materiaDiv.className = "materia";
@@ -70,48 +65,61 @@ document.addEventListener("DOMContentLoaded", () => {
     titulo.textContent = nombre;
     materiaDiv.appendChild(titulo);
 
-    // Contenedor de notas
     const notasList = document.createElement("div");
     notasList.className = "notas-list";
     materiaDiv.appendChild(notasList);
 
-    // Agregar notas precargadas si hay
     notas.forEach((notaObj) => {
       agregarNotaUI(notasList, notaObj.tipo, notaObj.valor);
     });
 
-    // Botón para agregar TP
     const agregarTPbtn = document.createElement("button");
     agregarTPbtn.className = "agregar-tp-btn";
     agregarTPbtn.textContent = "➕ Agregar trabajo práctico";
     materiaDiv.appendChild(agregarTPbtn);
 
-    // Manejar click agregar TP
     agregarTPbtn.addEventListener("click", () => {
       const nuevoTpNum = contarNotasTipo(notasList, "TP") + 1;
       agregarNotaUI(notasList, "TP", null, nuevoTpNum);
       guardarNotas();
     });
 
-    // Agregar parciales y final si no existen
+    // Asegurar parciales, final y recuperatorios existentes
     ["Parcial 1", "Parcial 2", "Final"].forEach((tipo) => {
       if (!tieneNotaTipo(notasList, tipo)) {
         agregarNotaUI(notasList, tipo);
       }
     });
 
-    // Guardar notas cuando cambian
+    // Verificar y agregar recuperatorios para parciales y final según nota
+    verificarYAgregarRecuperatorios(notasList);
+
     notasList.addEventListener("change", (e) => {
-      if (e.target.classList.contains("nota-select") || e.target.classList.contains("nota-input")) {
-        manejarCambioNota(e.target);
+      if (
+        e.target.classList.contains("nota-select") ||
+        e.target.classList.contains("nota-input")
+      ) {
+        manejarCambioNota(e.target, notasList);
       }
     });
 
     container.appendChild(materiaDiv);
+
+    // Calcular promedio al cargar
+    calcularYMostrarPromedio(materiaDiv);
   }
 
-  // Función para agregar un campo de nota al UI
   function agregarNotaUI(container, tipo, valor = null, numeroTP = null) {
+    // Evitar agregar duplicados (salvo TP que se numeran)
+    if (
+      tipo !== "TP" &&
+      [...container.children].some(
+        (n) => n.querySelector(".nota-label").textContent === tipo
+      )
+    ) {
+      return;
+    }
+
     const notaDiv = document.createElement("div");
     notaDiv.className = "nota-item";
 
@@ -120,17 +128,14 @@ document.addEventListener("DOMContentLoaded", () => {
     label.textContent = numeroTP && tipo === "TP" ? `TP${numeroTP}` : tipo;
     notaDiv.appendChild(label);
 
-    // Select desplegable para nota 60-100 o opción "Desaprobado"
     const selectNota = document.createElement("select");
     selectNota.className = "nota-select";
 
-    // Opción "Desaprobado" para notas < 60
     const opcionDesaprobado = document.createElement("option");
     opcionDesaprobado.value = "desaprobado";
     opcionDesaprobado.textContent = "Desaprobado (ingresar nota manual)";
     selectNota.appendChild(opcionDesaprobado);
 
-    // Opciones 60 a 100 de uno en uno
     for (let i = 60; i <= 100; i++) {
       const opt = document.createElement("option");
       opt.value = i;
@@ -140,7 +145,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     notaDiv.appendChild(selectNota);
 
-    // Input para nota manual (solo si desaprobado)
     const inputManual = document.createElement("input");
     inputManual.type = "number";
     inputManual.min = 0;
@@ -149,7 +153,6 @@ document.addEventListener("DOMContentLoaded", () => {
     inputManual.placeholder = "Nota < 60";
     notaDiv.appendChild(inputManual);
 
-    // Mostrar input manual solo si valor < 60
     function actualizarInputManual() {
       if (selectNota.value === "desaprobado") {
         inputManual.style.display = "inline-block";
@@ -163,7 +166,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     actualizarInputManual();
 
-    // Si valor dado es < 60, mostrar input manual con valor
     if (valor !== null) {
       if (valor < 60) {
         selectNota.value = "desaprobado";
@@ -173,25 +175,25 @@ document.addEventListener("DOMContentLoaded", () => {
         selectNota.value = valor.toString();
       }
     } else {
-      selectNota.value = "desaprobado"; // Por defecto desaprobado, para que agregues
+      selectNota.value = "desaprobado";
       actualizarInputManual();
     }
 
-    // Cambiar select/input
     selectNota.addEventListener("change", () => {
       actualizarInputManual();
       actualizarEstadoNota(notaDiv);
       guardarNotas();
+      verificarYAgregarRecuperatorios(container);
       calcularYMostrarPromedio(container.closest(".materia"));
     });
 
     inputManual.addEventListener("input", () => {
       actualizarEstadoNota(notaDiv);
       guardarNotas();
+      verificarYAgregarRecuperatorios(container);
       calcularYMostrarPromedio(container.closest(".materia"));
     });
 
-    // Botón eliminar para TP (solo si es TP)
     if (tipo === "TP") {
       const btnEliminar = document.createElement("button");
       btnEliminar.className = "eliminar-tp-btn boton-emoj";
@@ -209,14 +211,12 @@ document.addEventListener("DOMContentLoaded", () => {
     actualizarEstadoNota(notaDiv);
   }
 
-  // Actualiza el color y clase según nota (aprobado o desaprobado)
   function actualizarEstadoNota(notaDiv) {
     let valorNota;
     const select = notaDiv.querySelector(".nota-select");
     const input = notaDiv.querySelector(".nota-input");
 
     if (select.style.display === "none") {
-      // Input manual visible (nota < 60)
       valorNota = Number(input.value);
     } else {
       valorNota = Number(select.value);
@@ -224,7 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isNaN(valorNota)) valorNota = 0;
 
-    // Limpiar clases
     notaDiv.classList.remove("aprobado", "desaprobado");
 
     if (valorNota >= 60) {
@@ -234,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Función para contar cuántos TP hay
   function contarNotasTipo(container, tipo) {
     return [...container.children].filter((notaDiv) => {
       const label = notaDiv.querySelector(".nota-label").textContent;
@@ -242,7 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }).length;
   }
 
-  // Verifica si ya existe nota de cierto tipo (Parcial1, etc)
   function tieneNotaTipo(container, tipo) {
     return [...container.children].some((notaDiv) => {
       const label = notaDiv.querySelector(".nota-label").textContent;
@@ -250,7 +247,50 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Guarda todo en localStorage
+  // Esta función agrega los recuperatorios para parciales y final si la nota está desaprobada
+  function verificarYAgregarRecuperatorios(notasList) {
+    // Para cada parcial (1 y 2)
+    ["Parcial 1", "Parcial 2", "Final"].forEach((tipo) => {
+      // Buscar nota original
+      const notaOriginal = [...notasList.children].find(
+        (n) => n.querySelector(".nota-label").textContent === tipo
+      );
+      if (!notaOriginal) return;
+
+      // Obtener valor nota original
+      let valorOriginal;
+      const select = notaOriginal.querySelector(".nota-select");
+      const input = notaOriginal.querySelector(".nota-input");
+      if (select.style.display === "none") {
+        valorOriginal = Number(input.value);
+      } else {
+        valorOriginal = Number(select.value);
+      }
+      if (isNaN(valorOriginal)) valorOriginal = 0;
+
+      // Etiqueta recuperatorio
+      let etiquetaRecup = "";
+      if (tipo === "Final") etiquetaRecup = "Final Recuperatorio";
+      else etiquetaRecup = tipo + " Recuperatorio";
+
+      const existeRecup = tieneNotaTipo(notasList, etiquetaRecup);
+
+      if (valorOriginal < 60 && !existeRecup) {
+        // Agregar recuperatorio
+        agregarNotaUI(notasList, etiquetaRecup);
+      } else if (valorOriginal >= 60 && existeRecup) {
+        // Si aprobó, quitar recuperatorio si existe
+        const recupDiv = [...notasList.children].find(
+          (n) => n.querySelector(".nota-label").textContent === etiquetaRecup
+        );
+        if (recupDiv) {
+          notasList.removeChild(recupDiv);
+          guardarNotas();
+        }
+      }
+    });
+  }
+
   function guardarNotas() {
     document.querySelectorAll(".anio").forEach((seccion) => {
       const anio = seccion.dataset.anio;
@@ -282,7 +322,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Calcula el promedio de TP + parciales (sin final) y muestra
   function calcularYMostrarPromedio(materiaDiv) {
     if (!materiaDiv) return;
 
@@ -290,26 +329,43 @@ document.addEventListener("DOMContentLoaded", () => {
     let suma = 0;
     let contador = 0;
 
+    // Para parciales, sacar la mejor nota entre parcial y recuperatorio
+    // Para TP, sumarlas normalmente
+    const parciales = { "Parcial 1": null, "Parcial 2": null };
+
     notas.forEach((notaDiv) => {
       const label = notaDiv.querySelector(".nota-label").textContent.toLowerCase();
-      const isTP = label.startsWith("tp");
-      const isParcial = label.startsWith("parcial");
+      const valor = obtenerValorNota(notaDiv);
 
-      if (isTP || isParcial) {
-        let valorNota;
-        const select = notaDiv.querySelector(".nota-select");
-        const input = notaDiv.querySelector(".nota-input");
-
-        if (select.style.display === "none") {
-          valorNota = Number(input.value);
-        } else {
-          valorNota = Number(select.value);
-        }
-
-        if (!isNaN(valorNota)) {
-          suma += valorNota;
+      if (label.startsWith("tp")) {
+        if (!isNaN(valor)) {
+          suma += valor;
           contador++;
         }
+      } else if (label === "parcial 1" || label === "parcial 2") {
+        parciales[capitalize(label)] = valor;
+      }
+    });
+
+    // Buscar recuperatorios y comparar
+    ["Parcial 1", "Parcial 2"].forEach((tipo) => {
+      const etiquetaRecup = tipo + " recuperatorio";
+      const recupNotaDiv = notas.find(
+        (n) => n.querySelector(".nota-label").textContent.toLowerCase() === etiquetaRecup
+      );
+      if (recupNotaDiv) {
+        const recupValor = obtenerValorNota(recupNotaDiv);
+        if (recupValor > parciales[tipo]) {
+          parciales[tipo] = recupValor;
+        }
+      }
+    });
+
+    // Sumar parciales
+    Object.values(parciales).forEach((val) => {
+      if (val !== null && !isNaN(val)) {
+        suma += val;
+        contador++;
       }
     });
 
@@ -319,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
       promedioTexto = `Promedio TP + parciales: ${promedio.toFixed(2)}%`;
     }
 
-    // Mostrar o actualizar promedio en la materia
+    // Mostrar o actualizar promedio
     let promDiv = materiaDiv.querySelector(".promedio");
     if (!promDiv) {
       promDiv = document.createElement("div");
@@ -329,14 +385,23 @@ document.addEventListener("DOMContentLoaded", () => {
     promDiv.textContent = promedioTexto;
   }
 
-  // Cargar materias con datos y calcular promedios al cargar
-  aniosSections.forEach((seccion) => {
-    seccion.querySelectorAll(".materia").forEach((materiaDiv) => {
-      calcularYMostrarPromedio(materiaDiv);
-    });
-  });
+  function obtenerValorNota(notaDiv) {
+    const select = notaDiv.querySelector(".nota-select");
+    const input = notaDiv.querySelector(".nota-input");
 
-  // Botones para agregar materias manualmente
+    if (select.style.display === "none") {
+      const val = Number(input.value);
+      return isNaN(val) ? 0 : val;
+    } else {
+      const val = Number(select.value);
+      return isNaN(val) ? 0 : val;
+    }
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
   const agregarBtns = document.querySelectorAll(".agregar-materia-btn");
   agregarBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -350,4 +415,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
-      
+                         
