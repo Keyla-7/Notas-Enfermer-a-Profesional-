@@ -1,0 +1,168 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #ffe6f0;
+  color: #4a004d;
+  text-align: center;
+  padding: 20px;
+  background-image: url('https://i.imgur.com/9tpHx7h.png'); /* Moñitos suaves */
+  background-repeat: repeat;
+  background-size: 40px 40px;
+  background-position: center;
+  opacity: 0.95;
+}
+
+h1 {
+  color: #d10077;
+  margin-bottom: 30px;
+}
+
+h2 {
+  color: #b30068;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.anio {
+  max-width: 800px;
+  margin: 0 auto 40px auto;
+  background: rgba(255, 204, 230, 0.8);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 0 10px #d10077aa;
+}
+
+.materias-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.materia {
+  background-color: #ffcce0;
+  border: 2px solid #d10077;
+  border-radius: 15px;
+  padding: 15px;
+  width: 320px;
+  box-sizing: border-box;
+  text-align: left;
+  position: relative;
+  user-select: none;
+}
+
+.materia h3 {
+  margin-top: 0;
+  color: #80004d;
+}
+
+.notas-list {
+  margin-top: 10px;
+}
+
+.nota-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+
+.nota-label {
+  font-weight: bold;
+  color: #4a004d;
+}
+
+.nota-select, .nota-input {
+  font-size: 1em;
+  border-radius: 8px;
+  border: 1.5px solid #d10077;
+  padding: 3px 6px;
+  width: 110px;
+  background-color: white;
+  color: #4a004d;
+}
+
+.nota-input {
+  display: none;
+  width: 90px;
+}
+
+.boton-emoj {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-size: 1.3em;
+  margin-left: 8px;
+  transition: transform 0.15s ease;
+  user-select: none;
+}
+
+.boton-emoj:hover {
+  transform: scale(1.3);
+}
+
+.aprobado {
+  background-color: #c8e6c9 !important;
+  border-color: #4caf50 !important;
+  color: #2e7d32 !important;
+}
+
+.desaprobado {
+  background-color: #f8d7da !important;
+  border-color: #a8323a !important;
+  color: #a8323a !important;
+}
+
+.etiqueta-rojo {
+  color: #a8323a;
+  font-weight: bold;
+  margin-left: 6px;
+}
+
+.promedio {
+  margin-top: 12px;
+  font-weight: bold;
+  color: #4a004d;
+  font-size: 1.1em;
+  border-top: 1.5px solid #d10077;
+  padding-top: 10px;
+}
+
+/* Botón para agregar TP */
+.agregar-tp-btn {
+  margin-top: 10px;
+  background-color: #d10077;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 1.2em;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.agregar-tp-btn:hover {
+  background-color: #a0005a;
+}
+
+/* Botón para eliminar TP */
+.eliminar-tp-btn {
+  color: #a8323a;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  user-select: none;
+  transition: transform 0.15s ease;
+}
+
+.eliminar-tp-btn:hover {
+  transform: scale(1.3);
+}
+
+/* Scroll para cuando hay muchas notas */
+.materias-container, .anio {
+  max-height: 700px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
