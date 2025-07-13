@@ -1,72 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Notas Enfermería</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #ffe6f0;
-      color: #4a004d;
-      text-align: center;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #d10077;
-    }
-
-    .materia {
-      background: #ffcce0;
-      border: 2px solid #d10077;
-      margin: 10px auto;
-      padding: 10px;
-      border-radius: 10px;
-      width: 80%;
-      max-width: 500px;
-    }
-
-    .nota-select {
-      margin-top: 5px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enfermería Profesional - Notas</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Notas Enfermería Profesional</h1>
-  <main id="contenedor-notas"></main>
+  <h1>Enfermería Profesional</h1>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const materias = {
-        "Primer año": ["Antropología", "Procesos psicológicos y sociales", "Entornos virtuales"],
-        "Segundo año": ["Educación para la salud", "Nutrición y dietoterapia"],
-        "Tercer año": ["Inglés técnico", "Investigación en salud"]
-      };
+  <!-- Primer Año -->
+  <section class="anio" data-anio="1">
+    <h2>Primer Año</h2>
+    <div class="materias-container"></div>
+    <button class="agregar-materia-btn" data-anio="1">➕ Agregar materia</button>
+  </section>
 
-      const contenedor = document.getElementById("contenedor-notas");
+  <!-- Segundo Año -->
+  <section class="anio" data-anio="2">
+    <h2>Segundo Año</h2>
+    <div class="materias-container"></div>
+    <button class="agregar-materia-btn" data-anio="2">➕ Agregar materia</button>
+  </section>
 
-      for (const anio in materias) {
-        const titulo = document.createElement("h2");
-        titulo.textContent = anio;
-        contenedor.appendChild(titulo);
+  <!-- Tercer Año -->
+  <section class="anio" data-anio="3">
+    <h2>Tercer Año</h2>
+    <div class="materias-container"></div>
+    <button class="agregar-materia-btn" data-anio="3">➕ Agregar materia</button>
+  </section>
 
-        materias[anio].forEach(nombre => {
-          const div = document.createElement("div");
-          div.className = "materia";
-          div.innerHTML = `<strong>${nombre}</strong><br>
-            <label>Nota: </label>
-            <select class="nota-select">
-              ${Array.from({length: 41}, (_, i) => {
-                const nota = i + 60;
-                return `<option value="${nota}">${nota}%</option>`;
-              }).join("")}
-              <option value="desaprobado">Desaprobado</option>
-            </select>`;
-          contenedor.appendChild(div);
-        });
-      }
-    });
-  </script>
+<script src="script.js"></script>
 </body>
 </html>
