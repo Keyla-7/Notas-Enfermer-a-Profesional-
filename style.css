@@ -1,163 +1,75 @@
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #fff0f5, #ffe6f0);
-  color: #4a004d;
-  text-align: center;
+  background-color: #ffe6f0;
+  font-family: 'Segoe UI', sans-serif;
   padding: 20px;
+  color: #333;
 }
 
-h1 {
-  color: #d10077;
-  margin-bottom: 30px;
-}
-
-h2 {
-  color: #b30068;
-  margin-top: 40px;
-  margin-bottom: 20px;
+h1, h2 {
+  text-align: center;
+  color: #c71585;
 }
 
 .anio {
-  max-width: 800px;
-  margin: 0 auto 40px auto;
-  background: rgba(255, 204, 230, 0.8);
+  margin-bottom: 40px;
+  border: 2px dashed #ffa3c3;
+  padding: 15px;
   border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 0 10px #d10077aa;
-}
-
-.materias-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
+  background: #fff0f5;
 }
 
 .materia {
-  background-color: #ffcce0;
-  border: 2px solid #d10077;
-  border-radius: 15px;
-  padding: 15px;
-  width: 320px;
-  box-sizing: border-box;
-  text-align: left;
-  position: relative;
-  user-select: none;
-}
-
-.materia h3 {
-  margin-top: 0;
-  color: #80004d;
-}
-
-.notas-list {
-  margin-top: 10px;
+  background: white;
+  margin: 10px 0;
+  padding: 10px;
+  border-left: 6px solid #ff69b4;
+  border-radius: 8px;
 }
 
 .nota-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 6px 0;
+  margin: 5px 0;
 }
 
 .nota-label {
   font-weight: bold;
-  color: #4a004d;
+  margin-right: 10px;
 }
 
 .nota-select, .nota-input {
-  font-size: 1em;
-  border-radius: 8px;
-  border: 1.5px solid #d10077;
-  padding: 3px 6px;
-  width: 110px;
-  background-color: white;
-  color: #4a004d;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .nota-input {
-  display: none;
-  width: 90px;
-}
-
-.boton-emoj {
-  cursor: pointer;
-  border: none;
-  background: transparent;
-  font-size: 1.3em;
-  margin-left: 8px;
-  transition: transform 0.15s ease;
-  user-select: none;
-}
-
-.boton-emoj:hover {
-  transform: scale(1.3);
+  width: 60px;
 }
 
 .aprobado {
-  background-color: #c8e6c9 !important;
-  border-color: #4caf50 !important;
-  color: #2e7d32 !important;
+  background-color: #d4fdd4;
 }
 
 .desaprobado {
-  background-color: #f8d7da !important;
-  border-color: #a8323a !important;
-  color: #a8323a !important;
+  background-color: #ffd6d6;
 }
 
-.etiqueta-rojo {
-  color: #a8323a;
-  font-weight: bold;
-  margin-left: 6px;
+.agregar-tp-btn, .eliminar-tp-btn, .agregar-materia-btn {
+  margin-top: 5px;
+  background-color: #ff99c8;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.agregar-tp-btn:hover, .eliminar-tp-btn:hover, .agregar-materia-btn:hover {
+  background-color: #ff66a3;
 }
 
 .promedio {
-  margin-top: 12px;
-  font-weight: bold;
-  color: #4a004d;
-  font-size: 1.1em;
-  border-top: 1.5px solid #d10077;
-  padding-top: 10px;
-}
-
-/* Botón para agregar TP */
-.agregar-tp-btn {
   margin-top: 10px;
-  background-color: #d10077;
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 1.2em;
-  user-select: none;
-  transition: background-color 0.3s ease;
-}
-
-.agregar-tp-btn:hover {
-  background-color: #a0005a;
-}
-
-/* Botón para eliminar TP */
-.eliminar-tp-btn {
-  color: #a8323a;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2em;
-  user-select: none;
-  transition: transform 0.15s ease;
-}
-
-.eliminar-tp-btn:hover {
-  transform: scale(1.3);
-}
-
-/* Scroll para cuando hay muchas notas */
-.materias-container, .anio {
-  max-height: 700px;
-  overflow-y: auto;
-  padding-right: 10px;
+  font-weight: bold;
+  color: #c71585;
 }
