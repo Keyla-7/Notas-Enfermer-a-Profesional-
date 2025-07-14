@@ -1,75 +1,84 @@
 body {
-  background-color: #ffe6f0;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: Arial, sans-serif;
+  background: #f9c4d2;
   padding: 20px;
-  color: #333;
+  color: #4a0033;
 }
-
-h1, h2 {
-  text-align: center;
-  color: #c71585;
+h2 {
+  border-bottom: 2px solid #e75480;
+  padding-bottom: 5px;
 }
-
 .anio {
-  margin-bottom: 40px;
-  border: 2px dashed #ffa3c3;
+  margin-bottom: 30px;
+  background: #ffe4f1cc;
   padding: 15px;
-  border-radius: 15px;
-  background: #fff0f5;
+  border-radius: 10px;
 }
-
 .materia {
-  background: white;
-  margin: 10px 0;
-  padding: 10px;
-  border-left: 6px solid #ff69b4;
+  background: #fff0f6;
+  padding: 10px 15px;
+  margin-bottom: 10px;
   border-radius: 8px;
 }
-
-.nota-item {
-  margin: 5px 0;
+.materia h3 {
+  margin: 0 0 10px 0;
+  color: #b30059;
 }
-
+.notas-list {
+  margin-bottom: 10px;
+}
+.nota-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
 .nota-label {
+  width: 140px;
   font-weight: bold;
+}
+select, input[type=number] {
+  padding: 4px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #e75480;
+  width: 100px;
   margin-right: 10px;
 }
-
-.nota-select, .nota-input {
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+input[type=number] {
+  display: none;
 }
-
-.nota-input {
-  width: 60px;
+.nota-item.aprobado {
+  background: #d6f5d6;
+  border-radius: 5px;
 }
-
-.aprobado {
-  background-color: #d4fdd4;
+.nota-item.desaprobado {
+  background: #f9d6d6;
+  border-radius: 5px;
 }
-
-.desaprobado {
-  background-color: #ffd6d6;
-}
-
-.agregar-tp-btn, .eliminar-tp-btn, .agregar-materia-btn {
-  margin-top: 5px;
-  background-color: #ff99c8;
-  color: white;
+button {
+  background: #e75480;
   border: none;
-  padding: 5px 10px;
-  border-radius: 6px;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-}
-
-.agregar-tp-btn:hover, .eliminar-tp-btn:hover, .agregar-materia-btn:hover {
-  background-color: #ff66a3;
-}
-
-.promedio {
-  margin-top: 10px;
   font-weight: bold;
-  color: #c71585;
+  margin-right: 6px;
+}
+button:hover {
+  background: #b30059;
+}
+.promedio {
+  font-weight: bold;
+  color: #7a0053;
+}
+.btn-eliminar {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #b30059;
+}
+.btn-eliminar:hover {
+  color: #7a0053;
 }
