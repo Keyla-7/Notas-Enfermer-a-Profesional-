@@ -2,149 +2,31 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Notas Enfermería</title>
-  <style>
-    body {
-      font-family: Arial;
-      background: #ffe4f2;
-      padding: 20px;
-    }
-    .materia {
-      background: #fff;
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .nota-item {
-      margin: 10px 0;
-    }
-    .nota-label {
-      font-weight: bold;
-      margin-right: 10px;
-    }
-    .nota-input {
-      width: 60px;
-    }
-    select, input {
-      font-size: 16px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notas de Enfermería Profesional</title>
+  <link rel="stylesheet" href="css/estilos.css" />
 </head>
 <body>
+  <h1>📚 Notas de Enfermería Profesional</h1>
 
-  <h1>Notas por materia</h1>
-  <div id="contenedorMaterias"></div>
+  <div class="anio" data-anio="1">
+    <h2>🩺 1er Año</h2>
+    <div class="materias-container"></div>
+    <button class="agregar-materia-btn" data-anio="1">➕ Agregar materia</button>
+  </div>
 
-  <script>
-    const materias = ["Antropología", "Matemáticas", "Fisiología"];
+  <div class="anio" data-anio="2">
+    <h2>🧬 2do Año</h2>
+    <div class="materias-container"></div>
+    <button class="agregar-materia-btn" data-anio="2">➕ Agregar materia</button>
+  </div>
 
-    function crearUI() {
-      const cont = document.getElementById("contenedorMaterias");
-      cont.innerHTML = "";
+  <div class="anio" data-anio="3">
+    <h2>👶 3er Año</h2>
+    <div class="materias-container"></div>
+    <button class="agregar-materia-btn" data-anio="3">➕ Agregar materia</button>
+  </div>
 
-      const notasGuardadas = JSON.parse(localStorage.getItem("notas")) || {};
-
-      materias.forEach((nombre) => {
-        const divMat = document.createElement("div");
-        divMat.className = "materia";
-
-        const titulo = document.createElement("h3");
-        titulo.textContent = nombre;
-        divMat.appendChild(titulo);
-
-        const notaDiv = document.createElement("div");
-        notaDiv.className = "nota-item";
-
-        const label = document.createElement("span");
-        label.className = "nota-label";
-        label.textContent = "Nota:";
-        notaDiv.appendChild(label);
-
-        const select = document.createElement("select");
-
-        const optDesaprobado = document.createElement("option");
-        optDesaprobado.value = "desaprobado";
-        optDesaprobado.textContent = "Desaprobado (manual)";
-        select.appendChild(optDesaprobado);
-
-        for (let i = 60; i <= 100; i++) {
-          const opt = document.createElement("option");
-          opt.value = i;
-          opt.textContent = i;
-          select.appendChild(opt);
-        }
-
-        const input = document.createElement("input");
-        input.type = "number";
-        input.min = 0;
-        input.max = 59;
-        input.className = "nota-input";
-        input.placeholder = "<60";
-        input.style.display = "none";
-
-        notaDiv.appendChild(select);
-        notaDiv.appendChild(input);
-        divMat.appendChild(notaDiv);
-        cont.appendChild(divMat);
-
-        // Cargar nota si está guardada
-        if (notasGuardadas[nombre] !== undefined) {
-          const val = notasGuardadas[nombre];
-          if (val < 60) {
-            select.value = "desaprobado";
-            input.value = val;
-            input.style.display = "inline-block";
-            select.style.display = "none";
-          } else {
-            select.value = val.toString();
-            select.style.display = "inline-block";
-            input.style.display = "none";
-          }
-        }
-
-        select.addEventListener("change", () => {
-          if (select.value === "desaprobado") {
-            input.style.display = "inline-block";
-            select.style.display = "none";
-            input.focus();
-          }
-          guardarNotas();
-        });
-
-        input.addEventListener("input", () => {
-          guardarNotas();
-        });
-      });
-    }
-
-    function guardarNotas() {
-      const notasGuardar = {};
-
-      document.querySelectorAll(".materia").forEach((materiaDiv) => {
-        const nombre = materiaDiv.querySelector("h3").textContent;
-        const select = materiaDiv.querySelector("select");
-        const input = materiaDiv.querySelector("input");
-
-        let valor;
-
-        if (select.style.display === "none") {
-          valor = parseInt(input.value);
-        } else {
-          valor = parseInt(select.value);
-        }
-
-        if (!isNaN(valor)) {
-          notasGuardar[nombre] = valor;
-        }
-      });
-
-      localStorage.setItem("notas", JSON.stringify(notasGuardar));
-    }
-
-    document.addEventListener("DOMContentLoaded", crearUI);
-  </script>
-
+  <script src="js/script.js"></script>
 </body>
 </html>
