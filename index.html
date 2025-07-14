@@ -1,129 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Notas</title>
-<style>
-  body { font-family: Arial; background: #f9c4d2; padding: 20px; }
-  .materia { background: #fff; margin: 10px 0; padding: 10px; border-radius: 8px; }
-  .nota-item { margin: 5px 0; }
-  .nota-label { font-weight: bold; margin-right: 10px; }
-  .nota-input { width: 60px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Notas Guardadas</title>
+  <style>
+    body {
+      font-family: Arial;
+      background-color: #ffe0ef;
+      padding: 20px;
+    }
+    .materia {
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    select, input {
+      font-size: 1em;
+      margin-left: 10px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Notas de materias</h1>
+  <div id="contenedor"></div>
 
-<div id="contenedorMaterias"></div>
+  <script>
+    const materias = ["Antropología", "Matemáticas", "Fisiología"];
 
-<script>
-const materias = ["Antropología", "Matemáticas", "Fisiología"];
+    function crearUI() {
+      const contenedor = document.getElementById("contenedor");
+      contenedor.innerHTML = "";
 
-function crearUI() {
-  const cont = document.getElementById("contenedorMaterias");
-  cont.innerHTML = "";
+      const datosGuardados = JSON.parse(localStorage.getItem("notasGuardadas") || "{}");
 
-  // Cargar datos guardados
-  const notasGuardadas = JSON.parse(localStorage.getItem("notas")) || {};
+      materias.forEach(nombre => {
+        const div = document.createElement("div");
+        div.className = "materia";
 
-  materias.forEach((nombre) => {
-    const divMat = document.createElement("div");
-    divMat.className = "materia";
+        const titulo = document.createElement("h3");
+        titulo.textContent = nombre;
+        div.appendChild(titulo);
 
-    const titulo = document.createElement("h3");
-    titulo.textContent = nombre;
-    divMat.appendChild(titulo);
-
-    // Nota
-    const notaDiv = document.createElement("div");
-    notaDiv.className = "nota-item";
-
-    const label = document.createElement("span");
-    label.className = "nota-label";
-    label.textContent = "Nota:";
-    notaDiv.appendChild(label);
-
-    const select = document.createElement("select");
-    const optDesaprobado = document.createElement("option");
-    optDesaprobado.value = "desaprobado";
-    optDesaprobado.textContent = "Desaprobado (manual)";
-    select.appendChild(optDesaprobado);
-
-    for(let i=60; i<=100; i++){
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = i;
-      select.appendChild(opt);
-    }
-
-    notaDiv.appendChild(select);
-
-    const input = document.createElement("input");
-    input.type = "number";
-    input.min = 0;
-    input.max = 59;
-    input.className = "nota-input";
-    input.placeholder = "<60";
-    input.style.display = "none";
-    notaDiv.appendChild(input);
-
-    divMat.appendChild(notaDiv);
-    cont.appendChild(divMat);
-
-    // Cargar valor si existe
-    if(notasGuardadas[nombre] !== undefined){
-      const val = notasGuardadas[nombre];
-      if(val < 60){
-        select.value = "desaprobado";
-        select.style.display = "none";
-        input.style.display = "inline-block";
-        input.value = val;
-      } else {
-        select.value = val;
-        select.style.display = "inline-block";
+        const select = document.createElement("select");
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = 0;
+        input.max = 59;
         input.style.display = "none";
-      }
+
+        const optDesap = document.createElement("option");
+        optDesap.value = "desaprobado";
+        optDesap.textContent = "Desaprobado (manual)";
+        select.appendChild(optDesap);
+
+        for (let i = 60; i <= 100; i++) {
+          const op = document.createElement("option");
+          op.value = i;
+          op.textContent = i;
+          select.appendChild(op);
+        }
+
+        // Cargar valor si existe
+        const valor = datosGuardados[nombre];
+        if (valor !== undefined) {
+          if (valor < 60) {
+            select.value = "desaprobado";
+            select.style.display = "none";
+            input.style.display = "inline-block";
+            input.value = valor;
+          } else {
+            select.value = valor;
+          }
+        }
+
+        // Eventos
+        select.addEventListener("change", () => {
+          if (select.value === "desaprobado") {
+            select.style.display = "none";
+            input.style.display = "inline-block";
+            input.focus();
+          }
+          guardarNotas();
+        });
+
+        input.addEventListener("input", guardarNotas);
+        input.addEventListener("blur", guardarNotas); // muy importante
+
+        div.appendChild(select);
+        div.appendChild(input);
+        contenedor.appendChild(div);
+      });
     }
 
-    // Actualizar input/ select
-    select.addEventListener("change", () => {
-      if(select.value === "desaprobado"){
-        input.style.display = "inline-block";
-        select.style.display = "none";
-        input.focus();
-      }
-      guardarNotas();
-    });
+    function guardarNotas() {
+      const datos = {};
+      document.querySelectorAll(".materia").forEach(div => {
+        const nombre = div.querySelector("h3").textContent;
+        const select = div.querySelector("select");
+        const input = div.querySelector("input");
 
-    input.addEventListener("input", () => {
-      guardarNotas();
-    });
-  });
-}
+        let valor;
+        if (select.style.display === "none") {
+          valor = Number(input.value);
+        } else {
+          valor = Number(select.value);
+        }
 
-function guardarNotas(){
-  const notasGuardar = {};
-  document.querySelectorAll(".materia").forEach((materiaDiv) => {
-    const nombre = materiaDiv.querySelector("h3").textContent;
-    const select = materiaDiv.querySelector("select");
-    const input = materiaDiv.querySelector("input");
+        if (!isNaN(valor)) {
+          datos[nombre] = valor;
+        }
+      });
 
-    let valor;
-    if(select.style.display === "none"){
-      valor = Number(input.value);
-      if(isNaN(valor)) valor = 0;
-    } else {
-      valor = Number(select.value);
-      if(isNaN(valor)) valor = 0;
+      localStorage.setItem("notasGuardadas", JSON.stringify(datos));
     }
-    notasGuardar[nombre] = valor;
-  });
 
-  localStorage.setItem("notas", JSON.stringify(notasGuardar));
-}
-
-document.addEventListener("DOMContentLoaded", crearUI);
-</script>
-
+    document.addEventListener("DOMContentLoaded", crearUI);
+  </script>
 </body>
 </html>
