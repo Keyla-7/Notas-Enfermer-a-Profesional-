@@ -73,6 +73,17 @@ document.addEventListener("DOMContentLoaded", () => {
       agregarNotaUI(notasList, notaObj.tipo, notaObj.valor);
     });
 
+    const agregarTPbtn = document.createElement("button");
+    agregarTPbtn.className = "agregar-tp-btn";
+    agregarTPbtn.textContent = "➕ Agregar trabajo práctico";
+    materiaDiv.appendChild(agregarTPbtn);
+
+    agregarTPbtn.addEventListener("click", () => {
+      const nuevoTpNum = contarNotasTipo(notasList, "TP") + 1;
+      agregarNotaUI(notasList, "TP", null, nuevoTpNum);
+      guardarNotas();
+    });
+
     ["Parcial 1", "Parcial 2", "Final"].forEach((tipo) => {
       if (!tieneNotaTipo(notasList, tipo)) {
         agregarNotaUI(notasList, tipo);
@@ -81,22 +92,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     verificarYAgregarRecuperatorios(notasList);
 
-    const agregarTPbtn = document.createElement("button");
-    agregarTPbtn.className = "agregar-tp-btn";
-    agregarTPbtn.textContent = "➕ Agregar trabajo práctico";
-    agregarTPbtn.addEventListener("click", () => {
-      const nuevoTpNum = contarNotasTipo(notasList, "TP") + 1;
-      agregarNotaUI(notasList, "TP", null, nuevoTpNum);
-      guardarNotas();
+    notasList.addEventListener("change", (e) => {
+      if (
+        e.target.classList.contains("nota-select") ||
+        e.target.classList.contains("nota-input")
+      ) {
+        manejarCambioNota(e.target, notasList);
+      }
     });
-    materiaDiv.appendChild(agregarTPbtn);
 
     container.appendChild(materiaDiv);
+
     calcularYMostrarPromedio(materiaDiv);
   }
 
   function agregarNotaUI(container, tipo, valor = null, numeroTP = null) {
-    if (tipo !== "TP" && tieneNotaTipo(container, tipo)) return;
+    if (
+      tipo !== "TP" &&
+      [...container.children].some(
+        (n) => n.querySelector(".nota-label").textContent === tipo
+      )
+    ) {
+      return;
+    }
 
     const notaDiv = document.createElement("div");
     notaDiv.className = "nota-item";
@@ -128,12 +146,14 @@ document.addEventListener("DOMContentLoaded", () => {
     inputManual.min = 0;
     inputManual.max = 59;
     inputManual.className = "nota-input";
+    inputManual.placeholder = "Nota < 60";
     notaDiv.appendChild(inputManual);
 
     function actualizarInputManual() {
       if (selectNota.value === "desaprobado") {
         inputManual.style.display = "inline-block";
         selectNota.style.display = "none";
+        inputManual.focus();
       } else {
         inputManual.style.display = "none";
         selectNota.style.display = "inline-block";
@@ -146,13 +166,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (valor < 60) {
         selectNota.value = "desaprobado";
         inputManual.value = valor;
+        actualizarInputManual();
       } else {
         selectNota.value = valor.toString();
       }
     } else {
       selectNota.value = "desaprobado";
+      actualizarInputManual();
     }
-    actualizarInputManual();
 
     selectNota.addEventListener("change", () => {
       actualizarInputManual();
@@ -171,8 +192,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (tipo === "TP") {
       const btnEliminar = document.createElement("button");
-      btnEliminar.textContent = "🗑️";
       btnEliminar.className = "eliminar-tp-btn boton-emoj";
+      btnEliminar.title = "Eliminar trabajo práctico 🗑️";
+      btnEliminar.textContent = "🗑️";
       btnEliminar.addEventListener("click", () => {
         container.removeChild(notaDiv);
         guardarNotas();
@@ -185,33 +207,50 @@ document.addEventListener("DOMContentLoaded", () => {
     actualizarEstadoNota(notaDiv);
   }
 
-  function actualizarEstadoNota(notaDiv) {
-    const valor = obtenerValorNota(notaDiv);
-    notaDiv.classList.remove("aprobado", "desaprobado");
-    notaDiv.classList.add(valor >= 60 ? "aprobado" : "desaprobado");
-  }
-
+  // Esta función es clave: obtiene el valor numérico real de la nota
   function obtenerValorNota(notaDiv) {
     const select = notaDiv.querySelector(".nota-select");
     const input = notaDiv.querySelector(".nota-input");
-    if (select.value === "desaprobado") {
+
+    if (select.style.display === "none") {
+      // Si está en modo input manual (desaprobado), tomar valor del input
       const val = Number(input.value);
       return isNaN(val) ? 0 : val;
     } else {
+      // Si está en modo select, tomar el valor seleccionado (número o "desaprobado")
+      if (select.value === "desaprobado") {
+        // Si es desaprobado pero no hay input visible, devolver 0 para evitar errores
+        return 0;
+      }
       const val = Number(select.value);
       return isNaN(val) ? 0 : val;
     }
   }
 
+  function actualizarEstadoNota(notaDiv) {
+    const valorNota = obtenerValorNota(notaDiv);
+
+    notaDiv.classList.remove("aprobado", "desaprobado");
+
+    if (valorNota >= 60) {
+      notaDiv.classList.add("aprobado");
+    } else {
+      notaDiv.classList.add("desaprobado");
+    }
+  }
+
   function contarNotasTipo(container, tipo) {
-    return [...container.children].filter((n) => {
-      const label = n.querySelector(".nota-label").textContent;
+    return [...container.children].filter((notaDiv) => {
+      const label = notaDiv.querySelector(".nota-label").textContent;
       return tipo === "TP" ? label.startsWith("TP") : label === tipo;
     }).length;
   }
 
   function tieneNotaTipo(container, tipo) {
-    return [...container.children].some((n) => n.querySelector(".nota-label").textContent === tipo);
+    return [...container.children].some((notaDiv) => {
+      const label = notaDiv.querySelector(".nota-label").textContent;
+      return label === tipo;
+    });
   }
 
   function verificarYAgregarRecuperatorios(notasList) {
@@ -222,7 +261,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!notaOriginal) return;
 
       const valorOriginal = obtenerValorNota(notaOriginal);
-      const etiquetaRecup = tipo === "Final" ? "Final Recuperatorio" : tipo + " Recuperatorio";
+
+      let etiquetaRecup = "";
+      if (tipo === "Final") etiquetaRecup = "Final Recuperatorio";
+      else etiquetaRecup = tipo + " Recuperatorio";
+
       const existeRecup = tieneNotaTipo(notasList, etiquetaRecup);
 
       if (valorOriginal < 60 && !existeRecup) {
@@ -231,7 +274,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const recupDiv = [...notasList.children].find(
           (n) => n.querySelector(".nota-label").textContent === etiquetaRecup
         );
-        if (recupDiv) notasList.removeChild(recupDiv);
+        if (recupDiv) {
+          notasList.removeChild(recupDiv);
+          guardarNotas();
+        }
       }
     });
   }
@@ -247,8 +293,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         materiaDiv.querySelectorAll(".nota-item").forEach((notaDiv) => {
           const tipo = notaDiv.querySelector(".nota-label").textContent;
-          const valor = obtenerValorNota(notaDiv);
-          notas.push({ tipo, valor });
+
+          // Aquí usamos la función que siempre devuelve el valor correcto
+          const valorNota = obtenerValorNota(notaDiv);
+
+          notas.push({ tipo, valor: valorNota });
         });
 
         materias.push({ nombre, notas });
@@ -259,9 +308,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function calcularYMostrarPromedio(materiaDiv) {
+    if (!materiaDiv) return;
+
     const notas = Array.from(materiaDiv.querySelectorAll(".nota-item"));
     let suma = 0;
     let contador = 0;
+
     const parciales = { "Parcial 1": null, "Parcial 2": null };
 
     notas.forEach((notaDiv) => {
@@ -279,13 +331,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     ["Parcial 1", "Parcial 2"].forEach((tipo) => {
-      const recup = tipo + " recuperatorio";
-      const recupNota = notas.find(
-        (n) => n.querySelector(".nota-label").textContent.toLowerCase() === recup
+      const etiquetaRecup = tipo + " recuperatorio";
+      const recupNotaDiv = notas.find(
+        (n) => n.querySelector(".nota-label").textContent.toLowerCase() === etiquetaRecup
       );
-      if (recupNota) {
-        const recupValor = obtenerValorNota(recupNota);
-        if (recupValor > parciales[tipo]) parciales[tipo] = recupValor;
+      if (recupNotaDiv) {
+        const recupValor = obtenerValorNota(recupNotaDiv);
+        if (recupValor > parciales[tipo]) {
+          parciales[tipo] = recupValor;
+        }
       }
     });
 
@@ -296,21 +350,32 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    let promedioTexto = "Promedio TP + parciales: N/A";
+    if (contador > 0) {
+      const promedio = suma / contador;
+      promedioTexto = `Promedio TP + parciales: ${promedio.toFixed(2)}%`;
+    }
+
     let promDiv = materiaDiv.querySelector(".promedio");
     if (!promDiv) {
       promDiv = document.createElement("div");
       promDiv.className = "promedio";
       materiaDiv.appendChild(promDiv);
     }
-
-    promDiv.textContent =
-      contador > 0
-        ? `Promedio TP + parciales: ${((suma / contador).toFixed(2))}%`
-        : "Promedio TP + parciales: N/A";
+    promDiv.textContent = promedioTexto;
   }
 
   function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // Esta función se usa para detectar cambios y actualizar todo
+  function manejarCambioNota(target, notasList) {
+    const notaDiv = target.closest(".nota-item");
+    actualizarEstadoNota(notaDiv);
+    guardarNotas();
+    verificarYAgregarRecuperatorios(notasList);
+    calcularYMostrarPromedio(notaDiv.closest(".materia"));
   }
 
   const agregarBtns = document.querySelectorAll(".agregar-materia-btn");
@@ -326,4 +391,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
-                                          
+                          
